@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {TestFixture} from "../utils/TestFixture.sol";
+import { TestFixture } from "../utils/TestFixture.sol";
 
 /**
  * @title ConstantsUnit
  * @notice Unit tests for constants
  */
 contract ConstantsUnit is TestFixture {
-
     // Test MIN_BID constant
     function test_MIN_BID_constant() public view {
         assertEq(hook.MIN_BID(), 1e15);
@@ -46,10 +45,8 @@ contract ConstantsUnit is TestFixture {
 
     // Test constants sum correctly
     function test_constantsSumCorrectly() public view {
-        uint256 total = hook.LP_REWARD_PERCENTAGE() + 
-                       hook.AVS_REWARD_PERCENTAGE() + 
-                       hook.PROTOCOL_FEE_PERCENTAGE() + 
-                       hook.GAS_COMPENSATION_PERCENTAGE();
+        uint256 total = hook.LP_REWARD_PERCENTAGE() + hook.AVS_REWARD_PERCENTAGE()
+            + hook.PROTOCOL_FEE_PERCENTAGE() + hook.GAS_COMPENSATION_PERCENTAGE();
         assertEq(total, hook.BASIS_POINTS());
     }
 
@@ -130,11 +127,11 @@ contract ConstantsUnit is TestFixture {
         assertGt(hook.LP_REWARD_PERCENTAGE(), hook.AVS_REWARD_PERCENTAGE());
         assertGt(hook.LP_REWARD_PERCENTAGE(), hook.PROTOCOL_FEE_PERCENTAGE());
         assertGt(hook.LP_REWARD_PERCENTAGE(), hook.GAS_COMPENSATION_PERCENTAGE());
-        
+
         // AVS reward should be second largest
         assertGt(hook.AVS_REWARD_PERCENTAGE(), hook.PROTOCOL_FEE_PERCENTAGE());
         assertGt(hook.AVS_REWARD_PERCENTAGE(), hook.GAS_COMPENSATION_PERCENTAGE());
-        
+
         // Protocol fee should be larger than gas compensation
         assertGt(hook.PROTOCOL_FEE_PERCENTAGE(), hook.GAS_COMPENSATION_PERCENTAGE());
     }

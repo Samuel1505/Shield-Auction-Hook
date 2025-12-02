@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {TestFixture} from "../utils/TestFixture.sol";
-import {ShieldAuctionHook} from "../../src/hooks/ShieldAuctionHook.sol";
+import { TestFixture } from "../utils/TestFixture.sol";
+import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
 
 /**
  * @title AdminUnit
  * @notice Unit tests for admin functions
  */
 contract AdminUnit is TestFixture {
-
     // Test: Set operator authorization
     function test_setOperatorAuthorization() public {
         address newOperator = makeAddr("newOperator");
@@ -93,7 +92,7 @@ contract AdminUnit is TestFixture {
     function test_onlyOwnerUnpause() public {
         vm.prank(owner);
         hook.pause();
-        
+
         address notOwner = makeAddr("notOwner");
         vm.prank(notOwner);
         vm.expectRevert();
@@ -138,10 +137,10 @@ contract AdminUnit is TestFixture {
     // Test: Set operator authorization emits event
     function test_setOperatorAuthorizationEmitsEvent() public {
         address newOperator = makeAddr("newOperator");
-        
+
         vm.expectEmit(true, false, false, false);
         emit ShieldAuctionHook.OperatorAuthorized(newOperator);
-        
+
         hook.setOperatorAuthorization(newOperator, true);
     }
 
@@ -149,20 +148,20 @@ contract AdminUnit is TestFixture {
     function test_removeOperatorAuthorizationEmitsEvent() public {
         address newOperator = makeAddr("newOperator");
         hook.setOperatorAuthorization(newOperator, true);
-        
+
         vm.expectEmit(true, false, false, false);
         emit ShieldAuctionHook.OperatorDeauthorized(newOperator);
-        
+
         hook.setOperatorAuthorization(newOperator, false);
     }
 
     // Test: Set LVR threshold emits event
     function test_setLVRThresholdEmitsEvent() public {
         uint256 newThreshold = 200;
-        
+
         vm.expectEmit(true, false, false, false);
         emit ShieldAuctionHook.LVRThresholdUpdated(DEFAULT_LVR_THRESHOLD, newThreshold);
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(newThreshold);
     }
@@ -172,11 +171,11 @@ contract AdminUnit is TestFixture {
         address operator1 = makeAddr("op1");
         address operator2 = makeAddr("op2");
         address operator3 = makeAddr("op3");
-        
+
         hook.setOperatorAuthorization(operator1, true);
         hook.setOperatorAuthorization(operator2, true);
         hook.setOperatorAuthorization(operator3, true);
-        
+
         assertTrue(hook.authorizedOperators(operator1));
         assertTrue(hook.authorizedOperators(operator2));
         assertTrue(hook.authorizedOperators(operator3));
@@ -185,13 +184,13 @@ contract AdminUnit is TestFixture {
     // Test: Toggle operator authorization
     function test_toggleOperatorAuthorization() public {
         address newOperator = makeAddr("newOperator");
-        
+
         hook.setOperatorAuthorization(newOperator, true);
         assertTrue(hook.authorizedOperators(newOperator));
-        
+
         hook.setOperatorAuthorization(newOperator, false);
         assertFalse(hook.authorizedOperators(newOperator));
-        
+
         hook.setOperatorAuthorization(newOperator, true);
         assertTrue(hook.authorizedOperators(newOperator));
     }
@@ -200,18 +199,18 @@ contract AdminUnit is TestFixture {
     function test_lvrThresholdUpdateAffectsAuctionTriggering() public {
         vm.prank(owner);
         hook.setLVRThreshold(500); // 5%
-        
+
         // Set price deviation to 3% (below new threshold)
         priceOracle.setPrice(currency0, currency1, 1.03e18, false);
         swap(poolKey, true, -1e18, "");
-        
+
         bytes32 auctionId = hook.activeAuctions(poolId);
         assertEq(auctionId, bytes32(0)); // Should not trigger
-        
+
         // Set price deviation to 6% (above new threshold)
         priceOracle.setPrice(currency0, currency1, 1.06e18, false);
         swap(poolKey, true, -1e18, "");
-        
+
         auctionId = hook.activeAuctions(poolId);
         assertNotEq(auctionId, bytes32(0)); // Should trigger
     }
@@ -220,11 +219,11 @@ contract AdminUnit is TestFixture {
     function test_feeRecipientUpdate() public {
         address recipient1 = makeAddr("recipient1");
         address recipient2 = makeAddr("recipient2");
-        
+
         vm.prank(owner);
         hook.setFeeRecipient(recipient1);
         assertEq(hook.feeRecipient(), recipient1);
-        
+
         vm.prank(owner);
         hook.setFeeRecipient(recipient2);
         assertEq(hook.feeRecipient(), recipient2);
@@ -234,7 +233,7 @@ contract AdminUnit is TestFixture {
     function test_pausePreventsSwaps() public {
         vm.prank(owner);
         hook.pause();
-        
+
         setPriceDeviationAboveThreshold();
         vm.expectRevert();
         swap(poolKey, true, -1e18, "");
@@ -244,13 +243,13 @@ contract AdminUnit is TestFixture {
     function test_unpauseAllowsSwaps() public {
         vm.prank(owner);
         hook.pause();
-        
+
         vm.prank(owner);
         hook.unpause();
-        
+
         setPriceDeviationAboveThreshold();
         swap(poolKey, true, -1e18, "");
-        
+
         bytes32 auctionId = hook.activeAuctions(poolId);
         assertNotEq(auctionId, bytes32(0));
     }
@@ -259,7 +258,7 @@ contract AdminUnit is TestFixture {
     function test_pauseStatePersistence() public {
         vm.prank(owner);
         hook.pause();
-        
+
         assertTrue(hook.paused());
         assertTrue(hook.paused()); // Should persist
     }
@@ -270,7 +269,7 @@ contract AdminUnit is TestFixture {
         hook.pause();
         vm.prank(owner);
         hook.unpause();
-        
+
         bool paused1 = hook.paused();
         bool paused2 = hook.paused(); // Should persist
         assertFalse(paused1);
@@ -281,7 +280,7 @@ contract AdminUnit is TestFixture {
     function test_operatorAuthorizationPersistence() public {
         address newOperator = makeAddr("newOperator");
         hook.setOperatorAuthorization(newOperator, true);
-        
+
         assertTrue(hook.authorizedOperators(newOperator));
         assertTrue(hook.authorizedOperators(newOperator)); // Should persist
     }
@@ -291,7 +290,7 @@ contract AdminUnit is TestFixture {
         uint256 newThreshold = 200;
         vm.prank(owner);
         hook.setLVRThreshold(newThreshold);
-        
+
         assertEq(hook.lvrThreshold(), newThreshold);
         assertEq(hook.lvrThreshold(), newThreshold); // Should persist
     }
@@ -301,7 +300,7 @@ contract AdminUnit is TestFixture {
         address newRecipient = makeAddr("newRecipient");
         vm.prank(owner);
         hook.setFeeRecipient(newRecipient);
-        
+
         assertEq(hook.feeRecipient(), newRecipient);
         assertEq(hook.feeRecipient(), newRecipient); // Should persist
     }
@@ -315,10 +314,10 @@ contract AdminUnit is TestFixture {
     // Test: Authorize same operator multiple times
     function test_authorizeSameOperatorMultipleTimes() public {
         address newOperator = makeAddr("newOperator");
-        
+
         hook.setOperatorAuthorization(newOperator, true);
         assertTrue(hook.authorizedOperators(newOperator));
-        
+
         hook.setOperatorAuthorization(newOperator, true);
         assertTrue(hook.authorizedOperators(newOperator));
     }
@@ -335,7 +334,7 @@ contract AdminUnit is TestFixture {
         vm.prank(owner);
         hook.setLVRThreshold(1);
         assertEq(hook.lvrThreshold(), 1);
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(10000);
         assertEq(hook.lvrThreshold(), 10000);
@@ -353,10 +352,10 @@ contract AdminUnit is TestFixture {
     function test_pauseWhenAlreadyPaused() public {
         vm.prank(owner);
         hook.pause();
-        
+
         vm.prank(owner);
         hook.pause(); // Should not revert
-        
+
         assertTrue(hook.paused());
     }
 
@@ -364,7 +363,7 @@ contract AdminUnit is TestFixture {
     function test_unpauseWhenNotPaused() public {
         vm.prank(owner);
         hook.unpause(); // Should not revert
-        
+
         assertFalse(hook.paused());
     }
 
@@ -372,13 +371,13 @@ contract AdminUnit is TestFixture {
     function test_multipleAdminOperations() public {
         address newOperator = makeAddr("newOperator");
         address newRecipient = makeAddr("newRecipient");
-        
+
         hook.setOperatorAuthorization(newOperator, true);
         vm.prank(owner);
         hook.setLVRThreshold(200);
         vm.prank(owner);
         hook.setFeeRecipient(newRecipient);
-        
+
         assertTrue(hook.authorizedOperators(newOperator));
         assertEq(hook.lvrThreshold(), 200);
         assertEq(hook.feeRecipient(), newRecipient);
@@ -387,19 +386,19 @@ contract AdminUnit is TestFixture {
     // Test: Admin operations order independence
     function test_adminOperationsOrderIndependence() public {
         address newOperator = makeAddr("newOperator");
-        
+
         hook.setOperatorAuthorization(newOperator, true);
         vm.prank(owner);
         hook.setLVRThreshold(200);
-        
+
         assertTrue(hook.authorizedOperators(newOperator));
         assertEq(hook.lvrThreshold(), 200);
-        
+
         // Reverse order
         vm.prank(owner);
         hook.setLVRThreshold(300);
         hook.setOperatorAuthorization(newOperator, false);
-        
+
         assertFalse(hook.authorizedOperators(newOperator));
         assertEq(hook.lvrThreshold(), 300);
     }
@@ -408,11 +407,11 @@ contract AdminUnit is TestFixture {
     function test_lvrThresholdAffectsPriceDeviation() public {
         uint256 threshold1 = 100;
         uint256 threshold2 = 500;
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(threshold1);
         assertEq(hook.lvrThreshold(), threshold1);
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(threshold2);
         assertEq(hook.lvrThreshold(), threshold2);
@@ -422,19 +421,19 @@ contract AdminUnit is TestFixture {
     function test_operatorAuthorizationAffectsBidRevelation() public {
         bytes32 auctionId = createAuction();
         address newOperator = makeAddr("newOperator");
-        
+
         commitBid(auctionId, newOperator, 1 ether, 123);
-        
+
         vm.prank(newOperator);
         vm.expectRevert("ShieldAuctionHook: not authorized operator");
         hook.revealBid(auctionId, 1 ether, 123);
-        
+
         hook.setOperatorAuthorization(newOperator, true);
-        
+
         vm.prank(newOperator);
         hook.revealBid(auctionId, 1 ether, 123);
-        
-        (, uint256 revealedAmount, , bool revealed, ) = hook.revealedBids(auctionId, newOperator);
+
+        (, uint256 revealedAmount,, bool revealed,) = hook.revealedBids(auctionId, newOperator);
         assertEq(revealedAmount, 1 ether);
         assertTrue(revealed);
     }
@@ -443,7 +442,7 @@ contract AdminUnit is TestFixture {
     function test_pauseAffectsAllHookFunctions() public {
         vm.prank(owner);
         hook.pause();
-        
+
         // Should prevent swaps
         setPriceDeviationAboveThreshold();
         vm.expectRevert();
@@ -454,13 +453,13 @@ contract AdminUnit is TestFixture {
     function test_unpauseRestoresFunctionality() public {
         vm.prank(owner);
         hook.pause();
-        
+
         vm.prank(owner);
         hook.unpause();
-        
+
         setPriceDeviationAboveThreshold();
         swap(poolKey, true, -1e18, "");
-        
+
         bytes32 auctionId = hook.activeAuctions(poolId);
         assertNotEq(auctionId, bytes32(0));
     }
@@ -468,25 +467,25 @@ contract AdminUnit is TestFixture {
     // Test: LVR threshold update with active auction
     function test_lvrThresholdUpdateWithActiveAuction() public {
         bytes32 auctionId = createAuction();
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(200);
-        
+
         // Auction should still exist
-        (, , , bool isActive, , , , ) = hook.auctions(auctionId);
+        (,,, bool isActive,,,,) = hook.auctions(auctionId);
         assertTrue(isActive);
     }
 
     // Test: Fee recipient update doesn't affect existing auctions
     function test_feeRecipientUpdateDoesntAffectAuctions() public {
         bytes32 auctionId = createAuction();
-        
+
         address newRecipient = makeAddr("newRecipient");
         vm.prank(owner);
         hook.setFeeRecipient(newRecipient);
-        
+
         // Auction should still exist
-        (, , , bool isActive, , , , ) = hook.auctions(auctionId);
+        (,,, bool isActive,,,,) = hook.auctions(auctionId);
         assertTrue(isActive);
     }
 
@@ -494,15 +493,15 @@ contract AdminUnit is TestFixture {
     function test_operatorAuthorizationDoesntAffectExistingBids() public {
         bytes32 auctionId = createAuction();
         address newOperator = makeAddr("newOperator");
-        
+
         commitBid(auctionId, newOperator, 1 ether, 123);
-        
+
         hook.setOperatorAuthorization(newOperator, true);
-        
+
         // Should be able to reveal
         revealBid(auctionId, newOperator, 1 ether, 123);
-        
-        (, uint256 revealedAmount, , bool revealed, ) = hook.revealedBids(auctionId, newOperator);
+
+        (, uint256 revealedAmount,, bool revealed,) = hook.revealedBids(auctionId, newOperator);
         assertEq(revealedAmount, 1 ether);
         assertTrue(revealed);
     }
@@ -512,11 +511,11 @@ contract AdminUnit is TestFixture {
         vm.prank(owner);
         hook.setLVRThreshold(100);
         assertEq(hook.lvrThreshold(), 100);
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(200);
         assertEq(hook.lvrThreshold(), 200);
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(300);
         assertEq(hook.lvrThreshold(), 300);
@@ -527,15 +526,15 @@ contract AdminUnit is TestFixture {
         address recipient1 = makeAddr("recipient1");
         address recipient2 = makeAddr("recipient2");
         address recipient3 = makeAddr("recipient3");
-        
+
         vm.prank(owner);
         hook.setFeeRecipient(recipient1);
         assertEq(hook.feeRecipient(), recipient1);
-        
+
         vm.prank(owner);
         hook.setFeeRecipient(recipient2);
         assertEq(hook.feeRecipient(), recipient2);
-        
+
         vm.prank(owner);
         hook.setFeeRecipient(recipient3);
         assertEq(hook.feeRecipient(), recipient3);
@@ -545,12 +544,12 @@ contract AdminUnit is TestFixture {
     function test_adminFunctionsDontAffectConstants() public {
         uint256 minBidBefore = hook.MIN_BID();
         uint256 maxDurationBefore = hook.MAX_AUCTION_DURATION();
-        
+
         vm.prank(owner);
         hook.setLVRThreshold(200);
         vm.prank(owner);
         hook.pause();
-        
+
         assertEq(hook.MIN_BID(), minBidBefore);
         assertEq(hook.MAX_AUCTION_DURATION(), maxDurationBefore);
     }

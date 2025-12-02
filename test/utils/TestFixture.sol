@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Test} from "forge-std/Test.sol";
-import {Deployers} from "v4-periphery/lib/v4-core/test/utils/Deployers.sol";
-import {PoolKey} from "@uniswap/v4-core/types/PoolKey.sol";
-import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/types/PoolId.sol";
-import {Currency, CurrencyLibrary} from "@uniswap/v4-core/types/Currency.sol";
-import {IHooks} from "@uniswap/v4-core/interfaces/IHooks.sol";
-import {Hooks} from "@uniswap/v4-core/libraries/Hooks.sol";
-import {TickMath} from "@uniswap/v4-core/libraries/TickMath.sol";
-import {ModifyLiquidityParams, SwapParams} from "@uniswap/v4-core/types/PoolOperation.sol";
+import { Test } from "forge-std/Test.sol";
+import { Deployers } from "v4-periphery/lib/v4-core/test/utils/Deployers.sol";
+import { PoolKey } from "@uniswap/v4-core/types/PoolKey.sol";
+import { PoolId, PoolIdLibrary } from "@uniswap/v4-core/types/PoolId.sol";
+import { Currency, CurrencyLibrary } from "@uniswap/v4-core/types/Currency.sol";
+import { IHooks } from "@uniswap/v4-core/interfaces/IHooks.sol";
+import { Hooks } from "@uniswap/v4-core/libraries/Hooks.sol";
+import { TickMath } from "@uniswap/v4-core/libraries/TickMath.sol";
+import { ModifyLiquidityParams, SwapParams } from "@uniswap/v4-core/types/PoolOperation.sol";
 
-import {ShieldAuctionHook} from "../../src/hooks/ShieldAuctionHook.sol";
-import {IAVSDirectory} from "../../src/interfaces/IAVSDirectory.sol";
-import {IPriceOracle} from "../../src/interfaces/IPriceOracle.sol";
-import {AuctionLib} from "../../src/libraries/Auction.sol";
-import {MockAVSDirectory} from "../mocks/MockAVSDirectory.sol";
-import {MockPriceOracle} from "../mocks/MockPriceOracle.sol";
+import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
+import { IAVSDirectory } from "../../src/interfaces/IAVSDirectory.sol";
+import { IPriceOracle } from "../../src/interfaces/IPriceOracle.sol";
+import { AuctionLib } from "../../src/libraries/Auction.sol";
+import { MockAVSDirectory } from "../mocks/MockAVSDirectory.sol";
+import { MockPriceOracle } from "../mocks/MockPriceOracle.sol";
 
 /**
  * @title TestFixture
@@ -29,14 +29,14 @@ contract TestFixture is Test, Deployers {
     ShieldAuctionHook public hook;
     MockAVSDirectory public avsDirectory;
     MockPriceOracle public priceOracle;
-    
+
     address public constant AVS_ADDRESS = address(0x1234);
     address public constant FEE_RECIPIENT = address(0x5678);
     uint256 public constant DEFAULT_LVR_THRESHOLD = 100; // 1% in basis points
-    
+
     PoolKey public poolKey;
     PoolId public poolId;
-    
+
     // Test users
     address public owner = address(this);
     address public operator1 = makeAddr("operator1");
@@ -48,48 +48,45 @@ contract TestFixture is Test, Deployers {
     address public bidder1 = makeAddr("bidder1");
     address public bidder2 = makeAddr("bidder2");
     address public bidder3 = makeAddr("bidder3");
-    
+
     uint160 public INIT_SQRT_PRICE;
-    
+
     // Hook permissions mask
-    uint160 public hookPermissionsMask = 
-        Hooks.BEFORE_SWAP_FLAG |
-        Hooks.AFTER_SWAP_FLAG |
-        Hooks.AFTER_ADD_LIQUIDITY_FLAG |
-        Hooks.AFTER_REMOVE_LIQUIDITY_FLAG;
+    uint160 public hookPermissionsMask = Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG
+        | Hooks.AFTER_ADD_LIQUIDITY_FLAG | Hooks.AFTER_REMOVE_LIQUIDITY_FLAG;
 
     function setUp() public virtual {
         // Deploy mocks
         avsDirectory = new MockAVSDirectory();
         priceOracle = new MockPriceOracle();
-        
+
         // Deploy PoolManager and routers
         deployFreshManagerAndRouters();
-        
+
         // Calculate hook address with proper permissions
         hook = ShieldAuctionHook(
-            payable(
-                address(
-                    uint160(
-                        type(uint160).max & clearAllHookPermissionsMask | hookPermissionsMask
-                    )
-                )
-            )
+            payable(address(
+                    uint160(type(uint160).max & clearAllHookPermissionsMask | hookPermissionsMask)
+                ))
         );
-        
+
         // Deploy hook to the calculated address
-        deployCodeTo("ShieldAuctionHook", abi.encode(
-            manager,
-            avsDirectory,
-            AVS_ADDRESS,
-            priceOracle,
-            FEE_RECIPIENT,
-            DEFAULT_LVR_THRESHOLD
-        ), address(hook));
-        
+        deployCodeTo(
+            "ShieldAuctionHook",
+            abi.encode(
+                manager,
+                avsDirectory,
+                AVS_ADDRESS,
+                priceOracle,
+                FEE_RECIPIENT,
+                DEFAULT_LVR_THRESHOLD
+            ),
+            address(hook)
+        );
+
         // Set up currencies
         deployMintAndApprove2Currencies();
-        
+
         // Create pool key
         poolKey = PoolKey({
             currency0: currency0,
@@ -98,13 +95,13 @@ contract TestFixture is Test, Deployers {
             tickSpacing: 60,
             hooks: IHooks(address(hook))
         });
-        
+
         poolId = poolKey.toId();
-        
+
         // Initialize pool at 1:1 price
         INIT_SQRT_PRICE = uint160(TickMath.getSqrtPriceAtTick(0));
         manager.initialize(poolKey, INIT_SQRT_PRICE);
-        
+
         // Add initial liquidity to make swaps work
         modifyLiquidityRouter.modifyLiquidity(
             poolKey,
@@ -116,14 +113,20 @@ contract TestFixture is Test, Deployers {
             }),
             ""
         );
-        
+
         // Set up price oracle with 1:1 price
         priceOracle.setPrice(currency0, currency1, 1e18, false);
-        
+
         // Authorize operators
-        avsDirectory.setOperatorStatus(AVS_ADDRESS, operator1, IAVSDirectory.OperatorAVSRegistrationStatus.REGISTERED);
-        avsDirectory.setOperatorStatus(AVS_ADDRESS, operator2, IAVSDirectory.OperatorAVSRegistrationStatus.REGISTERED);
-        avsDirectory.setOperatorStatus(AVS_ADDRESS, operator3, IAVSDirectory.OperatorAVSRegistrationStatus.REGISTERED);
+        avsDirectory.setOperatorStatus(
+            AVS_ADDRESS, operator1, IAVSDirectory.OperatorAVSRegistrationStatus.REGISTERED
+        );
+        avsDirectory.setOperatorStatus(
+            AVS_ADDRESS, operator2, IAVSDirectory.OperatorAVSRegistrationStatus.REGISTERED
+        );
+        avsDirectory.setOperatorStatus(
+            AVS_ADDRESS, operator3, IAVSDirectory.OperatorAVSRegistrationStatus.REGISTERED
+        );
     }
 
     /**
@@ -152,28 +155,30 @@ contract TestFixture is Test, Deployers {
     /**
      * @notice Get auction struct
      */
-    function getAuction(bytes32 auctionId) internal view returns (
-        PoolId poolId_,
-        uint256 startTime,
-        uint256 duration,
-        bool isActive,
-        bool isComplete,
-        address winner,
-        uint256 winningBid,
-        uint256 totalBids
-    ) {
+    function getAuction(bytes32 auctionId)
+        internal
+        view
+        returns (
+            PoolId poolId_,
+            uint256 startTime,
+            uint256 duration,
+            bool isActive,
+            bool isComplete,
+            address winner,
+            uint256 winningBid,
+            uint256 totalBids
+        )
+    {
         return hook.auctions(auctionId);
     }
 
     /**
      * @notice Commit a bid
      */
-    function commitBid(
-        bytes32 auctionId,
-        address bidder,
-        uint256 amount,
-        uint256 nonce
-    ) internal returns (bytes32) {
+    function commitBid(bytes32 auctionId, address bidder, uint256 amount, uint256 nonce)
+        internal
+        returns (bytes32)
+    {
         bytes32 commitment = AuctionLib.generateCommitment(bidder, amount, nonce);
         vm.prank(bidder);
         hook.commitBid(auctionId, commitment);
@@ -183,12 +188,9 @@ contract TestFixture is Test, Deployers {
     /**
      * @notice Reveal a bid
      */
-    function revealBid(
-        bytes32 auctionId,
-        address operator,
-        uint256 amount,
-        uint256 nonce
-    ) internal {
+    function revealBid(bytes32 auctionId, address operator, uint256 amount, uint256 nonce)
+        internal
+    {
         vm.prank(operator);
         hook.revealBid(auctionId, amount, nonce);
     }
