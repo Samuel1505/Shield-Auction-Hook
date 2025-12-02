@@ -210,10 +210,10 @@ contract AuctionInvariants is TestFixture {
     // Invariant: Auction ID uniqueness
     function test_invariant_auctionIdUniqueness() public {
         bytes32 auctionId1 = createAuction();
-        
+
         // End the first auction so a new one can be created
         endAuctionIdempotent(auctionId1);
-        
+
         fastForward(1);
         bytes32 auctionId2 = createAuction();
 

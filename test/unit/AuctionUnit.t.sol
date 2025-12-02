@@ -84,11 +84,11 @@ contract AuctionUnit is TestFixture {
     function test_auctionIdUniqueness() public {
         bytes32 auctionId1 = createAuction();
         fastForwardPastAuctionDuration();
-        
+
         // End the first auction so a new one can be created
         vm.prank(owner);
         hook.endAuction(auctionId1);
-        
+
         fastForward(1);
         bytes32 auctionId2 = createAuction();
 
@@ -241,7 +241,7 @@ contract AuctionUnit is TestFixture {
         operators[2] = operator3;
         operators[3] = makeAddr("operator4");
         operators[4] = makeAddr("operator5");
-        
+
         // Authorize the new operators
         hook.setOperatorAuthorization(operators[3], true);
         hook.setOperatorAuthorization(operators[4], true);
@@ -323,10 +323,10 @@ contract AuctionUnit is TestFixture {
     // Test: Auction duration constant
     function test_auctionDurationConstant() public {
         bytes32 auctionId1 = createAuction();
-        
+
         // End the first auction so a new one can be created
         endAuctionIdempotent(auctionId1);
-        
+
         bytes32 auctionId2 = createAuction();
 
         (,, uint256 duration1,,,,,) = hook.auctions(auctionId1);

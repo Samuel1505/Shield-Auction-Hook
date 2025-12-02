@@ -381,7 +381,7 @@ contract BidFuzz is TestFixture {
         bytes32 commitment = AuctionLib.generateCommitment(bidder, amount, nonce);
 
         assertTrue(AuctionLib.verifyCommitment(commitment, bidder, amount, nonce));
-        
+
         // Check for overflow before adding 1
         if (amount < type(uint256).max) {
             assertFalse(AuctionLib.verifyCommitment(commitment, bidder, amount + 1, nonce));

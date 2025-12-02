@@ -225,18 +225,18 @@ contract TestFixture is Test, Deployers {
      */
     function endAuctionIdempotent(bytes32 auctionId) internal {
         (, uint256 startTime, uint256 duration,, bool isComplete,,,) = hook.auctions(auctionId);
-        
+
         // If already complete, do nothing
         if (isComplete) {
             return;
         }
-        
+
         // Fast forward past auction duration if needed
         uint256 endTime = startTime + duration;
         if (block.timestamp < endTime) {
             vm.warp(endTime + 1);
         }
-        
+
         // End the auction (will be idempotent if already ended)
         vm.prank(owner);
         hook.endAuction(auctionId);

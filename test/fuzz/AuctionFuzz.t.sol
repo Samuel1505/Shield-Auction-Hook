@@ -118,7 +118,7 @@ contract AuctionFuzz is TestFixture {
         operators[2] = operator3;
         operators[3] = makeAddr("operator4");
         operators[4] = makeAddr("operator5");
-        
+
         // Authorize the new operators
         hook.setOperatorAuthorization(operators[3], true);
         hook.setOperatorAuthorization(operators[4], true);
@@ -162,7 +162,7 @@ contract AuctionFuzz is TestFixture {
                 vm.prank(owner);
                 hook.endAuction(auctionId);
             }
-            
+
             (,,, bool isActiveAfter, bool isCompleteAfter,,,) = hook.auctions(auctionId);
             assertTrue(!isActiveAfter || isCompleteAfter, "Auction should be ended");
         } else {
@@ -329,7 +329,7 @@ contract AuctionFuzz is TestFixture {
         // Bound to prevent overflow
         price1 = bound(price1, 1e15, 1e21);
         price2 = bound(price2, 1e15, 1e21);
-        
+
         // Avoid division by zero
         vm.assume(price1 > 0 && price2 > 0);
 
@@ -347,7 +347,7 @@ contract AuctionFuzz is TestFixture {
         fees[0] = 3000;
         fees[1] = 5000;
         fees[2] = 10000;
-        
+
         for (uint8 i = 0; i < 3; i++) {
             PoolKey memory newPoolKey = PoolKey({
                 currency0: currency0,
@@ -358,11 +358,12 @@ contract AuctionFuzz is TestFixture {
             });
 
             PoolId newPoolId = newPoolKey.toId();
-            
+
             // Only initialize if not already initialized
             try manager.initialize(newPoolKey, INIT_SQRT_PRICE) {
-                // Pool initialized successfully
-            } catch {
+            // Pool initialized successfully
+            }
+                catch {
                 // Pool already initialized, continue
             }
 
@@ -431,14 +432,14 @@ contract AuctionFuzz is TestFixture {
 
         // Second time point - should be ended
         vm.warp(startTime + time2);
-        
+
         // Manually end the auction if it hasn't been auto-ended
         (,,, bool isActiveBefore, bool isCompleteBefore,,,) = hook.auctions(auctionId);
         if (isActiveBefore && !isCompleteBefore) {
             vm.prank(owner);
             hook.endAuction(auctionId);
         }
-        
+
         (,,, bool isActive2, bool isComplete2,,,) = hook.auctions(auctionId);
         // After ending, auction should be ended (either isComplete or !isActive)
         assertTrue(!isActive2 || isComplete2, "Should be ended at time2");

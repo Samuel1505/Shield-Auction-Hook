@@ -75,15 +75,17 @@ contract LiquidityUnit is TestFixture {
     // Test: Multiple LPs liquidity tracking
     function test_multipleLPsLiquidityTracking() public {
         uint256 initialLiquidity = hook.lpLiquidity(poolId, address(modifyLiquidityRouter));
-        
+
         // Mint tokens and approve router for lp1
         MockERC20(Currency.unwrap(currency0)).mint(lp1, 1e30);
         MockERC20(Currency.unwrap(currency1)).mint(lp1, 1e30);
         vm.prank(lp1);
-        MockERC20(Currency.unwrap(currency0)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency0))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
         vm.prank(lp1);
-        MockERC20(Currency.unwrap(currency1)).approve(address(modifyLiquidityRouter), type(uint256).max);
-        
+        MockERC20(Currency.unwrap(currency1))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
+
         // Use different salts to avoid position conflicts
         vm.prank(lp1);
         modifyLiquidityRouter.modifyLiquidity(
@@ -101,9 +103,11 @@ contract LiquidityUnit is TestFixture {
         MockERC20(Currency.unwrap(currency0)).mint(lp2, 1e30);
         MockERC20(Currency.unwrap(currency1)).mint(lp2, 1e30);
         vm.prank(lp2);
-        MockERC20(Currency.unwrap(currency0)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency0))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
         vm.prank(lp2);
-        MockERC20(Currency.unwrap(currency1)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency1))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
 
         vm.prank(lp2);
         modifyLiquidityRouter.modifyLiquidity(
@@ -367,15 +371,17 @@ contract LiquidityUnit is TestFixture {
     function test_totalLiquiditySumOfLPs() public {
         uint256 initialTotal = hook.totalLiquidity(poolId);
         uint256 initialRouterLiquidity = hook.lpLiquidity(poolId, address(modifyLiquidityRouter));
-        
+
         // Mint tokens and approve router for lp1
         MockERC20(Currency.unwrap(currency0)).mint(lp1, 1e30);
         MockERC20(Currency.unwrap(currency1)).mint(lp1, 1e30);
         vm.prank(lp1);
-        MockERC20(Currency.unwrap(currency0)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency0))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
         vm.prank(lp1);
-        MockERC20(Currency.unwrap(currency1)).approve(address(modifyLiquidityRouter), type(uint256).max);
-        
+        MockERC20(Currency.unwrap(currency1))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
+
         // Use different salts to avoid position conflicts
         vm.prank(lp1);
         modifyLiquidityRouter.modifyLiquidity(
@@ -395,9 +401,11 @@ contract LiquidityUnit is TestFixture {
         MockERC20(Currency.unwrap(currency0)).mint(lp2, 1e30);
         MockERC20(Currency.unwrap(currency1)).mint(lp2, 1e30);
         vm.prank(lp2);
-        MockERC20(Currency.unwrap(currency0)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency0))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
         vm.prank(lp2);
-        MockERC20(Currency.unwrap(currency1)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency1))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
 
         vm.prank(lp2);
         modifyLiquidityRouter.modifyLiquidity(
@@ -411,7 +419,7 @@ contract LiquidityUnit is TestFixture {
         uint256 totalLiquidity = hook.totalLiquidity(poolId);
         // Liquidity is tracked for the router address, not the pranked addresses
         uint256 routerLiquidity = hook.lpLiquidity(poolId, address(modifyLiquidityRouter));
-        
+
         // Total liquidity should be at least the router's tracked liquidity
         assertGe(totalLiquidity, routerLiquidity);
         // Both should have increased after second addition
@@ -534,15 +542,17 @@ contract LiquidityUnit is TestFixture {
     // Test: Liquidity tracking order independence
     function test_liquidityTrackingOrderIndependence() public {
         uint256 initialLiquidity = hook.lpLiquidity(poolId, address(modifyLiquidityRouter));
-        
+
         // Mint tokens and approve router for lp1
         MockERC20(Currency.unwrap(currency0)).mint(lp1, 1e30);
         MockERC20(Currency.unwrap(currency1)).mint(lp1, 1e30);
         vm.prank(lp1);
-        MockERC20(Currency.unwrap(currency0)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency0))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
         vm.prank(lp1);
-        MockERC20(Currency.unwrap(currency1)).approve(address(modifyLiquidityRouter), type(uint256).max);
-        
+        MockERC20(Currency.unwrap(currency1))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
+
         // Use different salts to avoid position conflicts
         vm.prank(lp1);
         modifyLiquidityRouter.modifyLiquidity(
@@ -560,9 +570,11 @@ contract LiquidityUnit is TestFixture {
         MockERC20(Currency.unwrap(currency0)).mint(lp2, 1e30);
         MockERC20(Currency.unwrap(currency1)).mint(lp2, 1e30);
         vm.prank(lp2);
-        MockERC20(Currency.unwrap(currency0)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency0))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
         vm.prank(lp2);
-        MockERC20(Currency.unwrap(currency1)).approve(address(modifyLiquidityRouter), type(uint256).max);
+        MockERC20(Currency.unwrap(currency1))
+            .approve(address(modifyLiquidityRouter), type(uint256).max);
 
         vm.prank(lp2);
         modifyLiquidityRouter.modifyLiquidity(
