@@ -354,7 +354,8 @@ contract AdminUnit is TestFixture {
         hook.pause();
 
         vm.prank(owner);
-        hook.pause(); // Should not revert
+        vm.expectRevert(); // Should revert when already paused
+        hook.pause();
 
         assertTrue(hook.paused());
     }
@@ -362,7 +363,8 @@ contract AdminUnit is TestFixture {
     // Test: Unpause when not paused
     function test_unpauseWhenNotPaused() public {
         vm.prank(owner);
-        hook.unpause(); // Should not revert
+        vm.expectRevert(); // Should revert when not paused
+        hook.unpause();
 
         assertFalse(hook.paused());
     }

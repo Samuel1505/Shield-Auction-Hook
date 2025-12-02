@@ -144,10 +144,19 @@ contract RewardFuzz is TestFixture {
         numAuctions = uint8(bound(numAuctions, 1, 5));
 
         for (uint8 i = 0; i < numAuctions; i++) {
+            // End previous auction if it exists
+            bytes32 existingAuctionId = hook.activeAuctions(poolId);
+            if (existingAuctionId != bytes32(0)) {
+                (,,, bool isActive, bool isComplete,,,) = hook.auctions(existingAuctionId);
+                if (isActive && !isComplete) {
+                    fastForwardPastAuctionDuration();
+                    vm.prank(owner);
+                    hook.endAuction(existingAuctionId);
+                }
+            }
+
             // Create new auction for each iteration
-            setPriceDeviationAboveThreshold();
-            swap(poolKey, true, -1e18, "");
-            bytes32 auctionId = hook.activeAuctions(poolId);
+            bytes32 auctionId = createAuction();
 
             uint256 winningBid =
                 TestHelpers.createValidBidAmount(uint256(keccak256(abi.encode(seed, i))));

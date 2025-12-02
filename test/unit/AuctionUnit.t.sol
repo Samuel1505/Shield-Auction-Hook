@@ -83,6 +83,12 @@ contract AuctionUnit is TestFixture {
     // Test: Auction ID uniqueness
     function test_auctionIdUniqueness() public {
         bytes32 auctionId1 = createAuction();
+        fastForwardPastAuctionDuration();
+
+        // End the first auction so a new one can be created
+        vm.prank(owner);
+        hook.endAuction(auctionId1);
+
         fastForward(1);
         bytes32 auctionId2 = createAuction();
 
@@ -126,10 +132,7 @@ contract AuctionUnit is TestFixture {
     // Test: Auction state after ending
     function test_auctionStateAfterEnding() public {
         bytes32 auctionId = createAuction();
-        fastForwardPastAuctionDuration();
-
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,, bool isActive, bool isComplete,,,) = hook.auctions(auctionId);
         assertFalse(isActive);
@@ -139,10 +142,7 @@ contract AuctionUnit is TestFixture {
     // Test: Active auction cleared after ending
     function test_activeAuctionClearedAfterEnding() public {
         bytes32 auctionId = createAuction();
-        fastForwardPastAuctionDuration();
-
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         assertEq(hook.activeAuctions(poolId), bytes32(0));
     }
@@ -234,9 +234,20 @@ contract AuctionUnit is TestFixture {
     function test_auctionBidCountIncrements() public {
         bytes32 auctionId = createAuction();
 
+        // Use different operators for each bid to avoid "bid already committed" error
+        address[] memory operators = new address[](5);
+        operators[0] = operator1;
+        operators[1] = operator2;
+        operators[2] = operator3;
+        operators[3] = makeAddr("operator4");
+        operators[4] = makeAddr("operator5");
+
+        // Authorize the new operators
+        hook.setOperatorAuthorization(operators[3], true);
+        hook.setOperatorAuthorization(operators[4], true);
+
         for (uint8 i = 0; i < 5; i++) {
-            address operator = i % 3 == 0 ? operator1 : (i % 3 == 1 ? operator2 : operator3);
-            commitBid(auctionId, operator, (i + 1) * 1 ether, i);
+            commitBid(auctionId, operators[i], (i + 1) * 1 ether, i);
 
             (,,,,,,, uint256 totalBids) = hook.auctions(auctionId);
             assertEq(totalBids, i + 1);
@@ -256,10 +267,7 @@ contract AuctionUnit is TestFixture {
     // Test: Auction can end after duration
     function test_auctionCanEndAfterDuration() public {
         bytes32 auctionId = createAuction();
-        fastForwardPastAuctionDuration();
-
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,, bool isActive, bool isComplete,,,) = hook.auctions(auctionId);
         assertFalse(isActive);
@@ -271,9 +279,7 @@ contract AuctionUnit is TestFixture {
         bytes32 auctionId = createAuction();
         assertEq(hook.activeAuctions(poolId), auctionId);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         assertEq(hook.activeAuctions(poolId), bytes32(0));
     }
@@ -281,10 +287,7 @@ contract AuctionUnit is TestFixture {
     // Test: Auction end with no bids
     function test_auctionEndWithNoBids() public {
         bytes32 auctionId = createAuction();
-        fastForwardPastAuctionDuration();
-
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,,,, address winner, uint256 winningBid,) = hook.auctions(auctionId);
         assertEq(winner, address(0));
@@ -299,9 +302,7 @@ contract AuctionUnit is TestFixture {
         commitBid(auctionId, operator1, winningBid, 123);
         revealBid(auctionId, operator1, winningBid, 123);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,,,, address winner, uint256 bidAmount,) = hook.auctions(auctionId);
         assertEq(winner, operator1);
@@ -322,6 +323,10 @@ contract AuctionUnit is TestFixture {
     // Test: Auction duration constant
     function test_auctionDurationConstant() public {
         bytes32 auctionId1 = createAuction();
+
+        // End the first auction so a new one can be created
+        endAuctionIdempotent(auctionId1);
+
         bytes32 auctionId2 = createAuction();
 
         (,, uint256 duration1,,,,,) = hook.auctions(auctionId1);
@@ -347,9 +352,7 @@ contract AuctionUnit is TestFixture {
         assertTrue(isActive);
         assertFalse(isComplete);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,, isActive, isComplete,,,) = hook.auctions(auctionId);
         assertFalse(isActive);
@@ -364,9 +367,7 @@ contract AuctionUnit is TestFixture {
         // Initially should be active but not complete
         assertTrue(isActive || !isComplete);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,, isActive, isComplete,,,) = hook.auctions(auctionId);
         // After ending, should not be active
@@ -398,11 +399,8 @@ contract AuctionUnit is TestFixture {
         commitBid(auctionId, operator1, winningBid, 123);
         revealBid(auctionId, operator1, winningBid, 123);
 
-        fastForwardPastAuctionDuration();
-
         vm.recordLogs();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         // Event should be emitted
         assertTrue(true);
