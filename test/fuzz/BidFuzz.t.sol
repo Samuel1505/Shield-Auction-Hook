@@ -158,8 +158,18 @@ contract BidFuzz is TestFixture {
         numBids = uint8(bound(numBids, 1, 10));
         uint256 maxBid = 0;
 
+        // Use different operators for each bid to avoid "bid already committed" error
+        address[] memory operators = new address[](numBids);
         for (uint8 i = 0; i < numBids; i++) {
-            address operator = i % 3 == 0 ? operator1 : (i % 3 == 1 ? operator2 : operator3);
+            if (i < 3) {
+                operators[i] = i == 0 ? operator1 : (i == 1 ? operator2 : operator3);
+            } else {
+                operators[i] = makeAddr(string(abi.encodePacked("operator", i)));
+                hook.setOperatorAuthorization(operators[i], true);
+            }
+        }
+
+        for (uint8 i = 0; i < numBids; i++) {
             uint256 amount =
                 TestHelpers.createValidBidAmount(uint256(keccak256(abi.encode(seed, i))));
             uint256 nonce = uint256(keccak256(abi.encode(seed, i)));
@@ -168,8 +178,8 @@ contract BidFuzz is TestFixture {
                 maxBid = amount;
             }
 
-            commitBid(auctionId, operator, amount, nonce);
-            revealBid(auctionId, operator, amount, nonce);
+            commitBid(auctionId, operators[i], amount, nonce);
+            revealBid(auctionId, operators[i], amount, nonce);
 
             (,,,,, address winner, uint256 winningBid,) = hook.auctions(auctionId);
             assertGe(winningBid, amount);
@@ -272,11 +282,14 @@ contract BidFuzz is TestFixture {
         vm.prank(bidder1);
         hook.commitBid(auctionId, commitment1);
 
-        vm.prank(bidder2);
-        hook.commitBid(auctionId, commitment2);
+        // Only commit second bid if bidder2 is different from bidder1
+        if (bidder1 != bidder2) {
+            vm.prank(bidder2);
+            hook.commitBid(auctionId, commitment2);
+            assertEq(hook.bidCommitments(auctionId, bidder2), commitment2);
+        }
 
         assertEq(hook.bidCommitments(auctionId, bidder1), commitment1);
-        assertEq(hook.bidCommitments(auctionId, bidder2), commitment2);
     }
 
     // Fuzz test: Concurrent bid revelations
@@ -285,28 +298,36 @@ contract BidFuzz is TestFixture {
 
         numReveals = uint8(bound(numReveals, 1, 5));
 
+        // Use different operators for each bid to avoid "bid already committed" error
+        address[] memory operators = new address[](numReveals);
+        for (uint8 i = 0; i < numReveals; i++) {
+            if (i < 3) {
+                operators[i] = i == 0 ? operator1 : (i == 1 ? operator2 : operator3);
+            } else {
+                operators[i] = makeAddr(string(abi.encodePacked("operator", i)));
+                hook.setOperatorAuthorization(operators[i], true);
+            }
+        }
+
         // Commit multiple bids
         for (uint8 i = 0; i < numReveals; i++) {
-            address operator = i % 3 == 0 ? operator1 : (i % 3 == 1 ? operator2 : operator3);
             uint256 amount =
                 TestHelpers.createValidBidAmount(uint256(keccak256(abi.encode(seed, i))));
             uint256 nonce = uint256(keccak256(abi.encode(seed, i)));
-            commitBid(auctionId, operator, amount, nonce);
+            commitBid(auctionId, operators[i], amount, nonce);
         }
 
         // Reveal all bids
         for (uint8 i = 0; i < numReveals; i++) {
-            address operator = i % 3 == 0 ? operator1 : (i % 3 == 1 ? operator2 : operator3);
             uint256 amount =
                 TestHelpers.createValidBidAmount(uint256(keccak256(abi.encode(seed, i))));
             uint256 nonce = uint256(keccak256(abi.encode(seed, i)));
-            revealBid(auctionId, operator, amount, nonce);
+            revealBid(auctionId, operators[i], amount, nonce);
         }
 
         // Verify all revealed
         for (uint8 i = 0; i < numReveals; i++) {
-            address operator = i % 3 == 0 ? operator1 : (i % 3 == 1 ? operator2 : operator3);
-            (,,, bool revealed,) = hook.revealedBids(auctionId, operator);
+            (,,, bool revealed,) = hook.revealedBids(auctionId, operators[i]);
             assertTrue(revealed);
         }
     }
@@ -360,8 +381,14 @@ contract BidFuzz is TestFixture {
         bytes32 commitment = AuctionLib.generateCommitment(bidder, amount, nonce);
 
         assertTrue(AuctionLib.verifyCommitment(commitment, bidder, amount, nonce));
-        assertFalse(AuctionLib.verifyCommitment(commitment, bidder, amount + 1, nonce));
-        assertFalse(AuctionLib.verifyCommitment(commitment, bidder, amount, nonce + 1));
+        
+        // Check for overflow before adding 1
+        if (amount < type(uint256).max) {
+            assertFalse(AuctionLib.verifyCommitment(commitment, bidder, amount + 1, nonce));
+        }
+        if (nonce < type(uint256).max) {
+            assertFalse(AuctionLib.verifyCommitment(commitment, bidder, amount, nonce + 1));
+        }
     }
 }
 

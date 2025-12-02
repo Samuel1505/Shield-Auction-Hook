@@ -208,5 +208,38 @@ contract TestFixture is Test, Deployers {
     function fastForwardPastAuctionDuration() internal {
         fastForward(hook.MAX_AUCTION_DURATION() + 1);
     }
+
+    /**
+     * @notice End an auction if it's still active, otherwise do nothing
+     */
+    function endAuctionIfActive(bytes32 auctionId) internal {
+        (,,, bool isActive, bool isComplete,,,) = hook.auctions(auctionId);
+        if (isActive && !isComplete) {
+            vm.prank(owner);
+            hook.endAuction(auctionId);
+        }
+    }
+
+    /**
+     * @notice End an auction idempotently - fast forward past duration if needed, then end
+     */
+    function endAuctionIdempotent(bytes32 auctionId) internal {
+        (, uint256 startTime, uint256 duration,, bool isComplete,,,) = hook.auctions(auctionId);
+        
+        // If already complete, do nothing
+        if (isComplete) {
+            return;
+        }
+        
+        // Fast forward past auction duration if needed
+        uint256 endTime = startTime + duration;
+        if (block.timestamp < endTime) {
+            vm.warp(endTime + 1);
+        }
+        
+        // End the auction (will be idempotent if already ended)
+        vm.prank(owner);
+        hook.endAuction(auctionId);
+    }
 }
 

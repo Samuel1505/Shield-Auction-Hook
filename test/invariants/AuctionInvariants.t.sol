@@ -56,9 +56,7 @@ contract AuctionInvariants is TestFixture {
         // Initially should be active but not complete
         assertTrue(isActive || !isComplete);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         (,,, isActive, isComplete,,,) = hook.auctions(auctionId);
         // After ending, should not be active
@@ -212,6 +210,10 @@ contract AuctionInvariants is TestFixture {
     // Invariant: Auction ID uniqueness
     function test_invariant_auctionIdUniqueness() public {
         bytes32 auctionId1 = createAuction();
+        
+        // End the first auction so a new one can be created
+        endAuctionIdempotent(auctionId1);
+        
         fastForward(1);
         bytes32 auctionId2 = createAuction();
 
@@ -273,9 +275,7 @@ contract AuctionInvariants is TestFixture {
         assertTrue(isActive1);
         assertFalse(isComplete1);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         // After ending, should be complete
         (,,, bool isActive2, bool isComplete2,,,) = hook.auctions(auctionId);
@@ -341,9 +341,7 @@ contract AuctionInvariants is TestFixture {
         bytes32 auctionId = createAuction();
         assertEq(hook.activeAuctions(poolId), auctionId);
 
-        fastForwardPastAuctionDuration();
-        vm.prank(owner);
-        hook.endAuction(auctionId);
+        endAuctionIdempotent(auctionId);
 
         assertEq(hook.activeAuctions(poolId), bytes32(0));
     }

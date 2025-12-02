@@ -291,9 +291,19 @@ contract ShieldAuctionHook is BaseHook, ReentrancyGuard, Ownable, Pausable {
         // Track liquidity removal
         if (params.liquidityDelta < 0) {
             uint256 liquidityToRemove = uint256(-params.liquidityDelta);
-            if (lpLiquidity[poolId][sender] >= liquidityToRemove) {
-                lpLiquidity[poolId][sender] -= liquidityToRemove;
-                totalLiquidity[poolId] -= liquidityToRemove;
+            uint256 currentLiquidity = lpLiquidity[poolId][sender];
+            
+            // Only remove up to what the LP has
+            uint256 actualRemoval = liquidityToRemove > currentLiquidity ? currentLiquidity : liquidityToRemove;
+            
+            if (actualRemoval > 0) {
+                lpLiquidity[poolId][sender] -= actualRemoval;
+                // Prevent underflow in totalLiquidity
+                if (totalLiquidity[poolId] >= actualRemoval) {
+                    totalLiquidity[poolId] -= actualRemoval;
+                } else {
+                    totalLiquidity[poolId] = 0;
+                }
             }
         }
 
@@ -410,7 +420,18 @@ contract ShieldAuctionHook is BaseHook, ReentrancyGuard, Ownable, Pausable {
      */
     function _endAuction(bytes32 auctionId, PoolId poolId) internal {
         AuctionLib.Auction storage auction = auctions[auctionId];
-        require(auction.isAuctionActive(), "ShieldAuctionHook: auction not active");
+        
+        // If already complete, do nothing (idempotent)
+        if (auction.isComplete) {
+            return;
+        }
+        
+        // Allow ending if auction has ended by time, even if isAuctionActive() returns false
+        // This handles the case where time has passed but auction hasn't been auto-ended
+        require(
+            auction.isAuctionActive() || auction.isAuctionEnded(),
+            "ShieldAuctionHook: auction not active"
+        );
         require(auction.isAuctionEnded(), "ShieldAuctionHook: auction not ended");
 
         auction.isActive = false;
@@ -442,6 +463,10 @@ contract ShieldAuctionHook is BaseHook, ReentrancyGuard, Ownable, Pausable {
      */
     function endAuction(bytes32 auctionId) external onlyOwner {
         AuctionLib.Auction storage auction = auctions[auctionId];
+        // If auction is already complete, do nothing (idempotent)
+        if (auction.isComplete) {
+            return;
+        }
         PoolId poolId = auction.poolId;
         _endAuction(auctionId, poolId);
     }
