@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import {Test} from "forge-std/Test.sol";
-import {PoolKey} from "@uniswap/v4-core/types/PoolKey.sol";
-import {PoolId, PoolIdLibrary} from "@uniswap/v4-core/types/PoolId.sol";
-import {Currency, CurrencyLibrary} from "@uniswap/v4-core/types/Currency.sol";
-import {ShieldAuctionHook} from "../../src/hooks/ShieldAuctionHook.sol";
-import {AuctionLib} from "../../src/libraries/Auction.sol";
-import {IAVSDirectory} from "../../src/interfaces/IAVSDirectory.sol";
-import {IPriceOracle} from "../../src/interfaces/IPriceOracle.sol";
-import {MockAVSDirectory} from "../mocks/MockAVSDirectory.sol";
-import {MockPriceOracle} from "../mocks/MockPriceOracle.sol";
+import { Test } from "forge-std/Test.sol";
+import { PoolKey } from "@uniswap/v4-core/types/PoolKey.sol";
+import { PoolId, PoolIdLibrary } from "@uniswap/v4-core/types/PoolId.sol";
+import { Currency, CurrencyLibrary } from "@uniswap/v4-core/types/Currency.sol";
+import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
+import { AuctionLib } from "../../src/libraries/Auction.sol";
+import { IAVSDirectory } from "../../src/interfaces/IAVSDirectory.sol";
+import { IPriceOracle } from "../../src/interfaces/IPriceOracle.sol";
+import { MockAVSDirectory } from "../mocks/MockAVSDirectory.sol";
+import { MockPriceOracle } from "../mocks/MockPriceOracle.sol";
 
 /**
  * @title TestHelpers
@@ -37,11 +37,11 @@ library TestHelpers {
     /**
      * @notice Generate a random bid commitment
      */
-    function generateRandomCommitment(
-        address bidder,
-        uint256 amount,
-        uint256 nonce
-    ) internal pure returns (bytes32) {
+    function generateRandomCommitment(address bidder, uint256 amount, uint256 nonce)
+        internal
+        pure
+        returns (bytes32)
+    {
         return AuctionLib.generateCommitment(bidder, amount, nonce);
     }
 
@@ -63,7 +63,11 @@ library TestHelpers {
     /**
      * @notice Create a price that triggers auction (above threshold)
      */
-    function createTriggerPrice(uint256 basePrice, uint256 threshold) internal pure returns (uint256) {
+    function createTriggerPrice(uint256 basePrice, uint256 threshold)
+        internal
+        pure
+        returns (uint256)
+    {
         // Price deviation should exceed threshold
         uint256 deviation = (basePrice * (threshold + 100)) / 10000; // Add extra to exceed threshold
         return basePrice + deviation;
@@ -72,7 +76,11 @@ library TestHelpers {
     /**
      * @notice Create a price that doesn't trigger auction (below threshold)
      */
-    function createNonTriggerPrice(uint256 basePrice, uint256 threshold) internal pure returns (uint256) {
+    function createNonTriggerPrice(uint256 basePrice, uint256 threshold)
+        internal
+        pure
+        returns (uint256)
+    {
         // Price deviation should be below threshold
         uint256 deviation = (basePrice * (threshold - 1)) / 10000;
         return basePrice + deviation;
@@ -81,9 +89,13 @@ library TestHelpers {
     /**
      * @notice Calculate price deviation in basis points
      */
-    function calculatePriceDeviation(uint256 price1, uint256 price2) internal pure returns (uint256) {
+    function calculatePriceDeviation(uint256 price1, uint256 price2)
+        internal
+        pure
+        returns (uint256)
+    {
         if (price1 == 0 || price2 == 0) return 0;
-        
+
         if (price1 > price2) {
             return ((price1 - price2) * 10000) / price2;
         } else {
@@ -94,16 +106,17 @@ library TestHelpers {
     /**
      * @notice Verify reward distribution percentages sum correctly
      */
-    function verifyRewardPercentages(
-        ShieldAuctionHook hook,
-        uint256 totalAmount
-    ) internal view returns (
-        uint256 lpReward,
-        uint256 operatorReward,
-        uint256 protocolFee,
-        uint256 gasCompensation,
-        uint256 total
-    ) {
+    function verifyRewardPercentages(ShieldAuctionHook hook, uint256 totalAmount)
+        internal
+        view
+        returns (
+            uint256 lpReward,
+            uint256 operatorReward,
+            uint256 protocolFee,
+            uint256 gasCompensation,
+            uint256 total
+        )
+    {
         lpReward = (totalAmount * hook.LP_REWARD_PERCENTAGE()) / hook.BASIS_POINTS();
         operatorReward = (totalAmount * hook.AVS_REWARD_PERCENTAGE()) / hook.BASIS_POINTS();
         protocolFee = (totalAmount * hook.PROTOCOL_FEE_PERCENTAGE()) / hook.BASIS_POINTS();
@@ -114,10 +127,11 @@ library TestHelpers {
     /**
      * @notice Get auction struct from hook
      */
-    function getAuction(
-        ShieldAuctionHook hook,
-        bytes32 auctionId
-    ) internal view returns (AuctionLib.Auction memory) {
+    function getAuction(ShieldAuctionHook hook, bytes32 auctionId)
+        internal
+        view
+        returns (AuctionLib.Auction memory)
+    {
         (
             PoolId poolId,
             uint256 startTime,
@@ -128,7 +142,7 @@ library TestHelpers {
             uint256 winningBid,
             uint256 totalBids
         ) = hook.auctions(auctionId);
-        
+
         return AuctionLib.Auction({
             poolId: poolId,
             startTime: startTime,
@@ -144,19 +158,14 @@ library TestHelpers {
     /**
      * @notice Get bid struct from hook
      */
-    function getBid(
-        ShieldAuctionHook hook,
-        bytes32 auctionId,
-        address bidder
-    ) internal view returns (AuctionLib.Bid memory) {
-        (
-            address bidderAddr,
-            uint256 amount,
-            bytes32 commitment,
-            bool revealed,
-            uint256 timestamp
-        ) = hook.revealedBids(auctionId, bidder);
-        
+    function getBid(ShieldAuctionHook hook, bytes32 auctionId, address bidder)
+        internal
+        view
+        returns (AuctionLib.Bid memory)
+    {
+        (address bidderAddr, uint256 amount, bytes32 commitment, bool revealed, uint256 timestamp) =
+            hook.revealedBids(auctionId, bidder);
+
         return AuctionLib.Bid({
             bidder: bidderAddr,
             amount: amount,
@@ -169,10 +178,11 @@ library TestHelpers {
     /**
      * @notice Check if auction should be active based on time
      */
-    function shouldAuctionBeActive(
-        AuctionLib.Auction memory auction,
-        uint256 currentTime
-    ) internal pure returns (bool) {
+    function shouldAuctionBeActive(AuctionLib.Auction memory auction, uint256 currentTime)
+        internal
+        pure
+        returns (bool)
+    {
         if (!auction.isActive) return false;
         if (auction.isComplete) return false;
         if (currentTime < auction.startTime) return false;
@@ -183,10 +193,11 @@ library TestHelpers {
     /**
      * @notice Check if auction should be ended based on time
      */
-    function shouldAuctionBeEnded(
-        AuctionLib.Auction memory auction,
-        uint256 currentTime
-    ) internal pure returns (bool) {
+    function shouldAuctionBeEnded(AuctionLib.Auction memory auction, uint256 currentTime)
+        internal
+        pure
+        returns (bool)
+    {
         if (auction.duration == type(uint256).max) return false;
         if (auction.startTime > type(uint256).max - auction.duration) return false;
         return currentTime >= auction.startTime + auction.duration;

@@ -13,4 +13,45 @@ remappings = [
     "chainlink-brownie-contracts/=lib/chainlink-brownie-contracts/"
 ]
 
+
+# Solidity compiler settings
+solc_version = "0.8.26"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+via_ir = false  # Disabled for faster compilation - enable for production builds if needed
+
+# Test settings
+verbosity = 2
+fuzz_runs = 256
+fuzz_max_test_rejects = 65536
+
+# Gas settings
+gas_limit = 9223372036854775807
+gas_price = 20000000000
+
+# RPC settings
+# eth_rpc_url = "${ETH_RPC_URL}"
+etherscan_api_key = "${ETHERSCAN_API_KEY}"
+
+[profile.production]
+optimizer = true
+optimizer_runs = 1000
+via_ir = true
+bytecode_hash = "none"
+
+[profile.ci]
+fuzz_runs = 1000
+verbosity = 4
+
+[profile.dev]
+optimizer = true
+optimizer_runs = 1  # Minimal optimization for fastest compilation
+via_ir = false
+
+[fmt]
+line_length = 100
+tab_width = 4
+bracket_spacing = true
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
