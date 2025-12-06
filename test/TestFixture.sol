@@ -11,10 +11,10 @@ import { Hooks } from "@uniswap/v4-core/libraries/Hooks.sol";
 import { TickMath } from "@uniswap/v4-core/libraries/TickMath.sol";
 import { ModifyLiquidityParams, SwapParams } from "@uniswap/v4-core/types/PoolOperation.sol";
 
-import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
-import { IAVSDirectory } from "../../src/interfaces/IAVSDirectory.sol";
-import { IPriceOracle } from "../../src/interfaces/IPriceOracle.sol";
-import { AuctionLib } from "../../src/libraries/Auction.sol";
+import { ShieldAuctionHook } from "../src/ShieldAuctionHook.sol";
+import { IAVSDirectory } from "../src/IAVSDirectory.sol";
+import { IPriceOracle } from "../src/IPriceOracle.sol";
+import { AuctionLib } from "../src/Auction.sol";
 import { MockAVSDirectory } from "./MockAVSDirectory.sol";
 import { MockPriceOracle } from "./MockPriceOracle.sol";
 

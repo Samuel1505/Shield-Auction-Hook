@@ -5,10 +5,10 @@ import { Test } from "forge-std/Test.sol";
 import { PoolKey } from "@uniswap/v4-core/types/PoolKey.sol";
 import { PoolId, PoolIdLibrary } from "@uniswap/v4-core/types/PoolId.sol";
 import { Currency, CurrencyLibrary } from "@uniswap/v4-core/types/Currency.sol";
-import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
-import { AuctionLib } from "../../src/libraries/Auction.sol";
-import { IAVSDirectory } from "../../src/interfaces/IAVSDirectory.sol";
-import { IPriceOracle } from "../../src/interfaces/IPriceOracle.sol";
+import { ShieldAuctionHook } from "../src/ShieldAuctionHook.sol";
+import { AuctionLib } from "../src/Auction.sol";
+import { IAVSDirectory } from "../src/IAVSDirectory.sol";
+import { IPriceOracle } from "../src/IPriceOracle.sol";
 import { MockAVSDirectory } from "./MockAVSDirectory.sol";
 import { MockPriceOracle } from "./MockPriceOracle.sol";
 
