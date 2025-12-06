@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 
 import { TestFixture } from "./TestFixture.sol";
-import { ShieldAuctionHook } from "../src/hooks/ShieldAuctionHook.sol";
+import { ShieldAuctionHook } from "../src/ShieldAuctionHook.sol";
 
 /**
  * @title AdminUnit

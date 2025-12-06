@@ -13,10 +13,10 @@ import { ModifyLiquidityParams, SwapParams } from "@uniswap/v4-core/types/PoolOp
 import { PoolSwapTest } from "@uniswap/v4-core/test/PoolSwapTest.sol";
 import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";
 
-import { ShieldAuctionHook } from "../src/hooks/ShieldAuctionHook.sol";
-import { IAVSDirectory } from "../src/interfaces/IAVSDirectory.sol";
-import { IPriceOracle } from "../src/interfaces/IPriceOracle.sol";
-import { AuctionLib } from "../src/libraries/Auction.sol";
+import { ShieldAuctionHook } from "../src/ShieldAuctionHook.sol";
+import { IAVSDirectory } from "../src/IAVSDirectory.sol";
+import { IPriceOracle } from "../src/IPriceOracle.sol";
+import { AuctionLib } from "../src/Auction.sol";
 import { MockAVSDirectory } from "./MockAVSDirectory.sol";
 import { MockPriceOracle } from "./MockPriceOracle.sol";
 

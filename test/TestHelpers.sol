@@ -9,8 +9,8 @@ import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
 import { AuctionLib } from "../../src/libraries/Auction.sol";
 import { IAVSDirectory } from "../../src/interfaces/IAVSDirectory.sol";
 import { IPriceOracle } from "../../src/interfaces/IPriceOracle.sol";
-import { MockAVSDirectory } from "../mocks/MockAVSDirectory.sol";
-import { MockPriceOracle } from "../mocks/MockPriceOracle.sol";
+import { MockAVSDirectory } from "./MockAVSDirectory.sol";
+import { MockPriceOracle } from "./MockPriceOracle.sol";
 
 /**
  * @title TestHelpers
