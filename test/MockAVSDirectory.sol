@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import { IAVSDirectory } from "../../src/interfaces/IAVSDirectory.sol";
+import { IAVSDirectory } from "../src/IAVSDirectory.sol";
 
 /**
  * @title MockAVSDirectory

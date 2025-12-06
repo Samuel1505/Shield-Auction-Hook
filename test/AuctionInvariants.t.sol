@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 
 import { TestFixture } from "./TestFixture.sol";
 import { TestHelpers } from "./TestHelpers.sol";
-import { AuctionLib } from "../../src/libraries/Auction.sol";
+import { AuctionLib } from "../src/Auction.sol";
 import { PoolId, PoolIdLibrary } from "@uniswap/v4-core/types/PoolId.sol";
 
 /**

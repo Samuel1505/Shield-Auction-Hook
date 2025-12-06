@@ -19,9 +19,9 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.s
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 
-import { IAVSDirectory } from "../interfaces/IAVSDirectory.sol";
-import { IPriceOracle } from "../interfaces/IPriceOracle.sol";
-import { AuctionLib } from "../libraries/Auction.sol";
+import { IAVSDirectory } from "./IAVSDirectory.sol";
+import { IPriceOracle } from "./IPriceOracle.sol";
+import { AuctionLib } from "./Auction.sol";
 import { ModifyLiquidityParams, SwapParams } from "@uniswap/v4-core/types/PoolOperation.sol";
 
 /**
