@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import { IPriceOracle } from "../../src/interfaces/IPriceOracle.sol";
+import { IPriceOracle } from "../src/IPriceOracle.sol";
 import { Currency } from "@uniswap/v4-core/types/Currency.sol";
 
 /**
