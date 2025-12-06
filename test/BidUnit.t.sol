@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import { TestFixture } from "../utils/TestFixture.sol";
+import { TestFixture } from "./TestFixture.sol";
 import { AuctionLib } from "../../src/libraries/Auction.sol";
 
 /**
