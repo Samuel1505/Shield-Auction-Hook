@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import { TestFixture } from "../utils/TestFixture.sol";
-import { TestHelpers } from "../utils/TestHelpers.sol";
+import { TestFixture } from "./TestFixture.sol";
+import { TestHelpers } from "./TestHelpers.sol";
 import { AuctionLib } from "../../src/libraries/Auction.sol";
 import { PoolKey } from "@uniswap/v4-core/types/PoolKey.sol";
 import { PoolId, PoolIdLibrary } from "@uniswap/v4-core/types/PoolId.sol";

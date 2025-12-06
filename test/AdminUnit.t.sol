@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import { TestFixture } from "../utils/TestFixture.sol";
-import { ShieldAuctionHook } from "../../src/hooks/ShieldAuctionHook.sol";
+import { TestFixture } from "./TestFixture.sol";
+import { ShieldAuctionHook } from "../src/hooks/ShieldAuctionHook.sol";
 
 /**
  * @title AdminUnit
