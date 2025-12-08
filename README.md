@@ -1,19 +1,6 @@
 # Shield Auction Hook
 Mitigate Loss Versus Rebalancing (LVR) in Uniswap v4 pools by running per-block sealed-bid auctions that redirect MEV to LPs. EigenLayer operators bid to execute profitable rebalancing; proceeds are split across LPs, the winning operator (incl. gas), and the protocol.
 
-## Table of Contents
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Contracts](#contracts)
-- [Auction Flow](#auction-flow)
-- [Rewards & Fees](#rewards--fees)
-- [Hook Permissions & Address Mining](#hook-permissions--address-mining)
-- [Setup](#setup)
-- [Building & Testing](#building--testing)
-- [Deployment](#deployment)
-- [Admin & Ops](#admin--ops)
-- [Security Notes](#security-notes)
-- [License](#license)
 
 ## Overview
 - Detect LVR opportunities by comparing pool spot price to an external oracle.
