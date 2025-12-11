@@ -571,3 +571,5 @@ The hook receives 7 ETH auction proceeds and calculates LP distribution shares p
 
 **Claims**: LPs call `claimRewards(poolId)` to withdraw accrued rewards. The system tracks accumulated proceeds per LP per pool, enabling efficient batch claiming.  
 
+
+https://gamma.app/docs/Sheild-Auction-Hook-Turning-LP-Losses-into-Revenue-e6uhcl4lw76yknq
